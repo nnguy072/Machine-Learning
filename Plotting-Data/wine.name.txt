@@ -1,0 +1,13 @@
+Alcohol
+Malic Acid
+Ash
+Alcalinity of Ash
+Magnesium
+Total Phenols
+Flavanoids
+Nonflavanoid Phenols
+Proanthocyanins
+Color Intensity
+Hue
+OD280/OD315 of Diluted Wines
+Proline
