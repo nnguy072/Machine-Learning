@@ -26,6 +26,9 @@ def populateAttributes(fileName):
 # Question 1.1
 # Assumption: You want me to make a Histogram for every feature and divde
 #             it between classes. Plot each feature for each class of each data set
+# topic - "Iris" or "Wine"
+# start - index of first item of a class
+# end   - index of last item in the same class
 def makeHistogram(topic, start, end):
     bins = raw_input("How many bins? ")
     Y = np.zeros(int(bins))
@@ -187,16 +190,106 @@ def makeScatterPlot():
 
 # Question 2.3.a
 def distance(x,y,p):
-    print "Distance"
+    sum = 0
+    for colNum in range(0,dataSet.shape[1]):
+        temp = abs(x[colNum] - y[colNum]) ** p
+        sum = sum + temp
+    dist = sum ** (1.0/p)
+    return dist
 
-# main driver for everything
+# Question 2.3.b
+def makeDistanceMatrix():
+    distMatrix_p1 = []
+    distMatrix_p2 = []
+    #initialize a 2d array
+    for i in range(dataSet.shape[0]):
+        new = []
+        for j in range(dataSet.shape[0]):
+            new.append(0)
+        distMatrix_p1.append(new)
+        distMatrix_p2.append(new)
+
+    #fill in each cell with distance
+    for rowNum in range(dataSet.shape[0]):
+        for colNum in range(dataSet.shape[0]):
+            if (rowNum == colNum):
+                distMatrix_p1[rowNum][colNum] = 0
+                distMatrix_p2[rowNum][colNum] = 0
+            else:
+                distMatrix_p1[rowNum][colNum] = distance(dataSet[rowNum, 0:dataSet.shape[1]], dataSet[colNum, 0:dataSet.shape[1]], 1)
+                distMatrix_p2[rowNum][colNum] = distance(dataSet[rowNum, 0:dataSet.shape[1]], dataSet[colNum, 0:dataSet.shape[1]], 2)
+
+    # plot it into a heatmap... for the iris it's gonna be 150x150 matrix
+    plt.imshow(np.array(distMatrix_p1), cmap='gist_heat', interpolation='nearest')
+    plt.colorbar()
+    plt.title("Distance Matrix P = 1")
+    plt.xticks(np.arange(25, 150, step=50), ["Class 1", "Class 2", "Class 3"])
+    plt.yticks(np.arange(25, 150, step=50), ["Class 1", "Class 2", "Class 3"])
+    plt.show()
+
+    plt.imshow(np.array(distMatrix_p2), cmap='gist_heat', interpolation='nearest')
+    plt.colorbar()
+    plt.title("Distance Matrix P = 2")
+    plt.xticks(np.arange(25, 150, step=50), ["Class 1", "Class 2", "Class 3"])
+    plt.yticks(np.arange(25, 150, step=50), ["Class 1", "Class 2", "Class 3"])
+    plt.show()
+
+# Question 2.3.e
+def findNearestNeighbor(topic):
+    index_i = -1;
+    index_j = -1;
+    temp = []
+    for i in range(dataSet.shape[0]):
+        shortest_distance = float('inf')
+        for j in range(dataSet.shape[0]):
+            temp_dst = distance(dataSet[i, 0:dataSet.shape[1]], dataSet[j, 0:dataSet.shape[1]], 1)
+            if(shortest_distance > temp_dst and j != i):
+                shortest_distance = temp_dst
+                index_i = i
+                index_j = j
+
+        if(topic == "Iris"):
+            if(index_j < 50):
+                if(index_i < 50):
+                    print "Nearest Neighbor Pairs: (" + str(index_i + 1) + ", " + str(index_j + 1) + "). Class of neighbor: Iris-setosa. Same class? Yes"
+                else:
+                    print "Nearest Neighbor Pairs: (" + str(index_i + 1) + ", " + str(index_j + 1) + "). Class of neighbor: Iris-setosa. Same class? No"
+            elif(index_j < 99):
+                if(index_i < 99 and index_i > 49):
+                    print "Nearest Neighbor Pairs: (" + str(index_i + 1) + ", " + str(index_j + 1) + "). Class of neighbor: Iris-versicolor. Same class? Yes"
+                else:
+                    print "Nearest Neighbor Pairs: (" + str(index_i + 1) + ", " + str(index_j + 1) + "). Class of neighbor: Iris-versicolor. Same class? No"
+            elif(index_j > 98):
+                if(index_i > 98):
+                    print "Nearest Neighbor Pairs: (" + str(index_i + 1) + ", " + str(index_j + 1) + "). Class of neighbor: Iris-virginica. Same class? Yes"
+                else:
+                    print "Nearest Neighbor Pairs: (" + str(index_i + 1) + ", " + str(index_j + 1) + "). Class of neighbor: Iris-virginica. Same class? No"
+        elif(topic == "Wine"):
+            if(index_j < 59):
+                if(index_i < 59):
+                    print "Nearest Neighbor Pairs: (" + str(index_i + 1) + ", " + str(index_j + 1) + "). Class of neighbor: Class 1. Same class? Yes"
+                else:
+                    print "Nearest Neighbor Pairs: (" + str(index_i + 1) + ", " + str(index_j + 1) + "). Class of neighbor: Class 1. Same class? No"
+            elif(index_j < 129):
+                if(index_i < 129 and index_i > 58):
+                    print "Nearest Neighbor Pairs: (" + str(index_i + 1) + ", " + str(index_j + 1) + "). Class of neighbor: Class 2. Same class? Yes"
+                else:
+                    print "Nearest Neighbor Pairs: (" + str(index_i + 1) + ", " + str(index_j + 1) + "). Class of neighbor: Class 2. Same class? No"
+            elif(index_j > 128):
+                if(index_i > 128):
+                    print "Nearest Neighbor Pairs: (" + str(index_i + 1) + ", " + str(index_j + 1) + "). Class of neighbor: Class 3. Same class? Yes"
+                else:
+                    print "Nearest Neighbor Pairs: (" + str(index_i + 1) + ", " + str(index_j + 1) + "). Class of neighbor: Class 3. Same class? No"
+
+
+
 # loads in data for data set
 # asks you what you want
 userInput = raw_input("Which data set?\n1. Iris\n2. Wine\n")
 if(userInput == "1"):
     dataSet = np.loadtxt('iris.data.txt', delimiter=',', usecols=(0, 1, 2, 3))
     attributes = populateAttributes('iris.name.txt')
-    whatDo = raw_input("What do?\n1. Histogram\n2. Box Plot\n3. Correlation Matrix\n4. Scatter Plot\n")
+    whatDo = raw_input("""What do?\n1. Histogram\n2. Box Plot\n3. Correlation Matrix\n4. Scatter Plot\n5. Distance\n""")
     if(whatDo == "1"):
         whatClass = raw_input("What Class?\n1. Iris-setosa\n2. Iris-versicolor\n3. Iris-virginica\n")
         if(whatClass == "1"):
@@ -221,10 +314,17 @@ if(userInput == "1"):
             makeCorrelationMatrix(True);
     elif(whatDo == "4"):
         makeScatterPlot()
+    elif(whatDo == "5"):
+        whatDoMore = raw_input("Distance Matrix?\n1. Yes, I want distance matrix/heat map.\n2. No, I want nearest neighbors\n")
+        if(whatDoMore == "1"):
+            makeDistanceMatrix()
+        elif(whatDoMore == "2"):
+            findNearestNeighbor("Iris")
+
 elif(userInput == "2"):
     dataSet = np.loadtxt('wine.data.txt', delimiter=',', usecols=(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13))
     attributes = populateAttributes('wine.name.txt')
-    whatDo = raw_input("What Graph?\n1. Histogram\n2. Box Plot\n3. Correlation Matrix\n")
+    whatDo = raw_input("What Graph?\n1. Histogram\n2. Box Plot\n3. Correlation Matrix\n4. Distance Matrix\n")
     if(whatDo == "1"):
         whatClass = raw_input("What Class?\n1. Class 1\n2. Class 2\n3. Class 3\n")
         if(whatClass == "1"):
@@ -247,3 +347,9 @@ elif(userInput == "2"):
             makeCorrelationMatrix(False);
         elif(heatMap == "2"):
             makeCorrelationMatrix(True);
+    elif(whatDo == "4"):
+        whatDoMore = raw_input("Distance Matrix?\n1. Yes, I want distance matrix/heat map.\n2. No, I want nearest neighbors\n")
+        if(whatDoMore == "1"):
+            makeDistanceMatrix()
+        elif(whatDoMore == "2"):
+            findNearestNeighbor("Wine")
