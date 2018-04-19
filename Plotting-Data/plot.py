@@ -61,14 +61,19 @@ def makeHistogram(topic, start, end):
         plt.xticks(inds, X)
 
         # add a title + axis for which data set
+        plt.title(topic)
         if(topic == "Iris"):
             plt.xlabel(attributes[colNum] + " in cm")
             plt.ylabel("Frequency")
+            plt.savefig("Iris_" + attributes[colNum] + "_bin_" + str(bins) + '.png')
         elif(topic == "Wine"):
             plt.xlabel(attributes[colNum])
             plt.ylabel("Frequency")
+            plt.savefig("Wine" + attributes[colNum] + "_bin_" + str(bins) + '.png')
+            if(colNum == 2):
+                plt.show()
+                exit()
 
-        plt.title(topic)
         plt.show()
 
 # question 1.2
@@ -81,6 +86,17 @@ def makeBoxPlot(topic, start, end):
             plt.xlabel(attributes[colNum] + " in cm")
         elif(topic == "Wine"):
             plt.xlabel(attributes[colNum])
+
+        # add a title + axis for which data set
+        plt.title(topic)
+        if(topic == "Iris"):
+            plt.xlabel(attributes[colNum] + " in cm")
+            plt.ylabel("Frequency")
+            plt.savefig("Iris_virginica_" + attributes[colNum] + '.png')
+        elif(topic == "Wine"):
+            plt.xlabel(attributes[colNum])
+            plt.ylabel("Frequency")
+            plt.savefig("Wine_" + attributes[colNum] + '.png')
 
         plt.show()
 
@@ -125,7 +141,7 @@ def correlation(x, y):
     return cov / (std_x * std_y)
 
 # Question 2.1.b + Question 2.1.d
-def makeCorrelationMatrix(isHeatMap):
+def makeCorrelationMatrix(topic, isHeatMap):
     correlationMatrix = []
     #initialize a 2d array
     for i in range(dataSet.shape[1]):
@@ -156,6 +172,12 @@ def makeCorrelationMatrix(isHeatMap):
         for tick in ax.get_xticklabels():
             tick.set_rotation(90)
         plt.colorbar()
+        # add a title + axis for which data set
+        plt.title(topic)
+        if(topic == "Iris"):
+            plt.savefig("Iris_Heat_Map" + '.png')
+        elif(topic == "Wine"):
+            plt.savefig("Wine_Heat_Map" + '.png')
         plt.show()
 
 # Question 2.2.a
@@ -186,6 +208,7 @@ def makeScatterPlot():
                 plt.scatter(x_1, y_1, c=colors_1, s=100)
                 plt.scatter(x_2, y_2, c=colors_2, s=100)
                 plt.scatter(x_3, y_3, c=colors_3, s=100)
+                plt.savefig(attributes[feature1] + " vs " + attributes[feature2] + '.png')
                 plt.show()
 
 # Question 2.3.a
@@ -198,7 +221,7 @@ def distance(x,y,p):
     return dist
 
 # Question 2.3.b
-def makeDistanceMatrix():
+def makeDistanceMatrix(topic):
     distMatrix_p1 = []
     distMatrix_p2 = []
     #initialize a 2d array
@@ -225,6 +248,11 @@ def makeDistanceMatrix():
     plt.title("Distance Matrix P = 1")
     plt.xticks(np.arange(25, 150, step=50), ["Class 1", "Class 2", "Class 3"])
     plt.yticks(np.arange(25, 150, step=50), ["Class 1", "Class 2", "Class 3"])
+    plt.title(topic + " P=1")
+    if(topic == "Iris"):
+        plt.savefig("Iris_Distance_Map_p1" + '.png')
+    elif(topic == "Wine"):
+        plt.savefig("Wine_Distance_Map_p1" + '.png')
     plt.show()
 
     plt.imshow(np.array(distMatrix_p2), cmap='gist_heat', interpolation='nearest')
@@ -232,6 +260,11 @@ def makeDistanceMatrix():
     plt.title("Distance Matrix P = 2")
     plt.xticks(np.arange(25, 150, step=50), ["Class 1", "Class 2", "Class 3"])
     plt.yticks(np.arange(25, 150, step=50), ["Class 1", "Class 2", "Class 3"])
+    plt.title(topic + " P=2")
+    if(topic == "Iris"):
+        plt.savefig("Iris_Distance_Map_p2" + '.png')
+    elif(topic == "Wine"):
+        plt.savefig("Wine_Distance_Map_p2" + '.png')
     plt.show()
 
 # Question 2.3.e
@@ -281,8 +314,6 @@ def findNearestNeighbor(topic):
                 else:
                     print "Nearest Neighbor Pairs: (" + str(index_i + 1) + ", " + str(index_j + 1) + "). Class of neighbor: Class 3. Same class? No"
 
-
-
 # loads in data for data set
 # asks you what you want
 userInput = raw_input("Which data set?\n1. Iris\n2. Wine\n")
@@ -309,15 +340,15 @@ if(userInput == "1"):
     elif(whatDo == "3"):
         heatMap = raw_input("Heatmap?\n1. No, I just want the correlation matrix\n2. Yes, I want a heat map\n")
         if(heatMap == "1"):
-            makeCorrelationMatrix(False);
+            makeCorrelationMatrix("Iris", False);
         elif(heatMap == "2"):
-            makeCorrelationMatrix(True);
+            makeCorrelationMatrix("Iris", True);
     elif(whatDo == "4"):
         makeScatterPlot()
     elif(whatDo == "5"):
         whatDoMore = raw_input("Distance Matrix?\n1. Yes, I want distance matrix/heat map.\n2. No, I want nearest neighbors\n")
         if(whatDoMore == "1"):
-            makeDistanceMatrix()
+            makeDistanceMatrix("Iris")
         elif(whatDoMore == "2"):
             findNearestNeighbor("Iris")
 
@@ -344,12 +375,12 @@ elif(userInput == "2"):
     elif(whatDo == "3"):
         heatMap = raw_input("Heatmap?\n1. No, I just want the correlation matrix\n2. Yes, I want a heat map\n")
         if(heatMap == "1"):
-            makeCorrelationMatrix(False);
+            makeCorrelationMatrix("Wine", False);
         elif(heatMap == "2"):
-            makeCorrelationMatrix(True);
+            makeCorrelationMatrix("Wine", True);
     elif(whatDo == "4"):
         whatDoMore = raw_input("Distance Matrix?\n1. Yes, I want distance matrix/heat map.\n2. No, I want nearest neighbors\n")
         if(whatDoMore == "1"):
-            makeDistanceMatrix()
+            makeDistanceMatrix("Wine")
         elif(whatDoMore == "2"):
             findNearestNeighbor("Wine")
