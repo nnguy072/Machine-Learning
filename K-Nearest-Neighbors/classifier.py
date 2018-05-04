@@ -82,7 +82,7 @@ def knn_classifier(x_test, x_train, y_train, k, p):
         # i added the [:k] to only get k nearest neighbors
         K_nearestNeighbors = sorted(dist_dict, key=dist_dict.get)[:k]
         y_pred.append(findMajority(K_nearestNeighbors, y_train))
-    return y_pred
+    return np.array(y_pred)
 # *********************************************************************
 
 
@@ -90,13 +90,50 @@ def knn_classifier(x_test, x_train, y_train, k, p):
 # *********************************************************************
 # QUESTION 2
 
+# returns tuple (Accuracy, Sensitivity, Specificity)
+def calculateMetrics(y_actual, y_pred):
+    total_correct = 0
+    true_positive = 0
+    false_positive = 0
+    false_negative = 0
+    true_negative = 0
+    for x in range(0, y_pred.shape[0]):
+        if(y_pred[x] == y_actual[x]):
+            total_correct = total_correct + 1
+        if(y_pred[x] == y_actual[x] and y_pred[x] == 4):
+            true_positive = true_positive + 1
+        if(y_pred[x] == y_actual[x] and y_pred[x] == 2):
+            true_negative = true_negative + 1
+        if(y_pred[x] != y_actual[x] and y_pred[x] == 4 and y_actual[x] == 2):
+            false_positive = false_positive + 1
+        if(y_pred[x] != y_actual[x] and y_pred[x] == 2 and y_actual[x] == 4):
+            false_negative = false_negative + 1
+
+    accuracy = float(total_correct) / y_pred.shape[0]
+    sensitivity = float(true_positive) / (true_positive + false_negative)
+    specificity = float(true_negative) / (true_negative + false_positive)
+
+    print "Accuracy: " + str(total_correct) + "/" + str(y_pred.shape[0]) + " = " + str(accuracy)
+    print "Sensitivity: " + str(true_positive) + "/(" + str(true_positive) +  " + " + str(false_negative) + ") = " + str(sensitivity)
+    print "Specificity: " + str(true_negative) + "/(" + str(true_negative) + " + " + str(false_positive) + ") = " + str(specificity)
+    print ""
+    return (accuracy, sensitivity, specificity)
+
+
 # kfcv = k-fold-cross-validation; we'll be using 10 fold
 # basically, you want to split data into k equal sections
 # use one section as test and rest as training. then repeat
 # until you use all of them.
+# TODO: make more robost by passing in function pointer for what classifer
 def kfcv(dataSet, k):
+    # TODO: evenly divide sections. if number is not evenly divisble, we'll
+    #       miss some data points
     k_fold_sections = dataSet.shape[0] / k
     left = 0
+    acc_list = []
+    sens_list = []
+    spec_list = []
+
     # basically we move sections by doing something like
     # (0 to n) -> (n to n * 2) -> (n * 2) to (n * 3); etc etc
     # i.g. if we had 680, it would be 0-68, 68-136, 136-204
@@ -112,8 +149,26 @@ def kfcv(dataSet, k):
         trainingSet = np.delete(dataSet, slice(left, (k_fold_sections * x)), axis=0)[:, :(dataSet.shape[1] - 1)]
         trainingSetLabls = np.delete(dataSet, slice(left, (k_fold_sections * x)), axis=0)[:, (dataSet.shape[1] - 1):]
         y_pred = knn_classifier(testSet, trainingSet, trainingSetLabls, lp_p_val, k_val)
-        left = k_fold_sections * x
+        y_actual = dataSet[left:k_fold_sections * x, (dataSet.shape[1] - 1):]
+
+        print "Predicted Classes"
         print y_pred
+        print "Actual Classes"
+        print dataSet[left:k_fold_sections * x, (dataSet.shape[1] - 1):].reshape(1, -1)
+        metrics = calculateMetrics(y_actual ,y_pred)
+        acc_list.append(metrics[0])
+        sens_list.append(metrics[1])
+        spec_list.append(metrics[2])
+
+        left = k_fold_sections * x  # move to next section
+    # convert to numpy array to do other calculations
+    acc_array = np.array(acc_list)
+    sens_array = np.array(sens_list)
+    spec_array = np.array(spec_list)
+    print "Accuracy Mean/Standard Deviation   : " + str(acc_array.mean()) + " | " + str(acc_array.std())
+    print "Sensitivity Mean/Standard Deviation: " + str(sens_array.mean()) + " | " + str(sens_array.std())
+    print "Specificity Mean/Standard Deviation: " + str(spec_array.mean()) + " | " + str(spec_array.std())
+
 
 # *********************************************************************
 
