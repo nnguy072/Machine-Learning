@@ -6,14 +6,6 @@ np.set_printoptions(threshold=np.inf)   #need this to print out all the data for
 # *********************************************************************
 # QUESTION 0: Getting Real Data
 
-# basically read in everything and
-# then replace every "?" w/ [TODO: something]
-def handleMissingValues(line):
-    for x in range(0, len(line)):
-        if(line[x] == "?"):
-            line[x] = -1    #something here; regression
-    return line
-
 # read in raw data from file
 def populateDataSet(fileName):
     file = open(fileName, "r")
@@ -24,20 +16,13 @@ def populateDataSet(fileName):
         if("?" not in line):
             intList = map(int, noNewLine.split(",")[1:]) #convert from string to int
             temp1.append(intList)
-        # uhh TODO: Later when I figure out this handling missing values thing
-        # if("?" in line):
-        #     intList = map(int, handleMissingValues(noNewLine.split(","))[1:]) #convert from string to int
-        #     temp1.append(handleMissingValues(noNewLine.split(","))[1:])
-        # else:
-        #     intList = map(int, noNewLine.split(",")[1:]) #convert from string to int
-        #     temp1.append(intList)
     return temp1
 # *********************************************************************
 
 
 
 # *********************************************************************
-# QUESTION 1: k-nearest neighbor classifier
+# QUESTION 1: k-nearest neighborso classifier
 
 # Question 2.3.a in Assignment 1
 # LP norm; inputs are:
@@ -133,6 +118,8 @@ def kfcv(dataSet, k):
     acc_list = []
     sens_list = []
     spec_list = []
+    num_folds = []
+    count = 1
 
     # basically we move sections by doing something like
     # (0 to n) -> (n to n * 2) -> (n * 2) to (n * 3); etc etc
@@ -148,7 +135,7 @@ def kfcv(dataSet, k):
         # then remove class labels from training set and make a new vector that holds that class data
         trainingSet = np.delete(dataSet, slice(left, (k_fold_sections * x)), axis=0)[:, :(dataSet.shape[1] - 1)]
         trainingSetLabls = np.delete(dataSet, slice(left, (k_fold_sections * x)), axis=0)[:, (dataSet.shape[1] - 1):]
-        y_pred = knn_classifier(testSet, trainingSet, trainingSetLabls, lp_p_val, k_val)
+        y_pred = knn_classifier(testSet, trainingSet, trainingSetL  abls, lp_p_val, k_val)
         y_actual = dataSet[left:k_fold_sections * x, (dataSet.shape[1] - 1):]
 
         print "Predicted Classes"
@@ -159,8 +146,11 @@ def kfcv(dataSet, k):
         acc_list.append(metrics[0])
         sens_list.append(metrics[1])
         spec_list.append(metrics[2])
+        num_folds.append(count)
+        count = count + 1
 
         left = k_fold_sections * x  # move to next section
+
     # convert to numpy array to do other calculations
     acc_array = np.array(acc_list)
     sens_array = np.array(sens_list)
@@ -168,6 +158,28 @@ def kfcv(dataSet, k):
     print "Accuracy Mean/Standard Deviation   : " + str(acc_array.mean()) + " | " + str(acc_array.std())
     print "Sensitivity Mean/Standard Deviation: " + str(sens_array.mean()) + " | " + str(sens_array.std())
     print "Specificity Mean/Standard Deviation: " + str(spec_array.mean()) + " | " + str(spec_array.std())
+
+    # plt.plot(acc_array)
+    plt.title("Nearest Neighbors x Accuracy; P = " + str(lp_p_val) + " K = " + str(k_val))
+    plt.ylabel("Accuracy")
+    plt.xlabel("Number of folds: " + str(k))
+    plt.errorbar(num_folds, acc_array, yerr=acc_array.std(), fmt='o')
+    plt.show()
+
+    # plt.plot(sens_array)
+    plt.title("Nearest Neighbors x Sensitivity; P = " + str(lp_p_val) + " K = " + str(k_val))
+    plt.ylabel("Sensitivity")
+    plt.xlabel("Number of folds: " + str(k))
+    plt.errorbar(num_folds, sens_array, yerr=sens_array.std(), fmt='o')
+    plt.show()
+
+    # plt.plot(spec_array)
+    plt.title("Nearest Neighbors x Specificity; P = " + str(lp_p_val) + " K = " + str(k_val))
+    plt.ylabel("Specificity")
+    plt.xlabel("Number of folds: " + str(k))
+    plt.errorbar(num_folds, spec_array, yerr=spec_array.std(), fmt='o')
+    plt.show()
+
 
 
 # *********************************************************************
